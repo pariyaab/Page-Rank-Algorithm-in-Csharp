@@ -1,6 +1,7 @@
 ﻿using System;
 using core.pagerank;
 using QuickGraph;
+using customedge;
 
 namespace MyProject
 {
@@ -26,6 +27,25 @@ namespace MyProject
 
             var tokendb = new PageRankProviderMgr(graph).GetPageRanks(normalizeScore);
             Console.WriteLine(string.Join(", ", tokendb.Select(kv => $"{kv.Key}: {kv.Value}")));
+
+            // test weighted graph
+            
+            var wgraph = new AdjacencyGraph<string, CustomEdge<string>>();
+            // add the vertex
+            wgraph.AddVertex("1");
+            wgraph.AddVertex("2");
+            wgraph.AddVertex("3");
+            wgraph.AddVertex("4");
+
+            // add the edges
+            wgraph.AddEdge(new CustomEdge<string>("1", "2", 1.0));
+            wgraph.AddEdge(new CustomEdge<string>("2", "3", 1.0));
+            wgraph.AddEdge(new CustomEdge<string>("2", "4", 1.0));
+            wgraph.AddEdge(new CustomEdge<string>("3", "2", 1.0));
+            wgraph.AddEdge(new CustomEdge<string>("4", "3", 1.0));
+
+            var tokendbweighted = new PageRankProviderMgr(wgraph).GetPageRanksWeighted(normalizeScore);
+            Console.WriteLine(string.Join(", ", tokendbweighted.Select(kv => $"{kv.Key}: {kv.Value}")));
         }
     }
 }
