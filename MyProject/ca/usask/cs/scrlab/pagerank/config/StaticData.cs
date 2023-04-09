@@ -1,6 +1,6 @@
 using System;
-namespace ca.usask.cs.srlab.pagerank.config
-{
+namespace ca.usask.cs.srlab.pagerank.config;
+
 public interface StaticData
 {
 // public attributes used by PageRank
