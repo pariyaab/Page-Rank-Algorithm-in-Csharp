@@ -30,15 +30,11 @@ public class PageRankProvider
 
     public bool checkSignificantDiff(double oldV, double newV)
     {
-        double diff = 0;
-        if (newV > oldV)
-            diff = newV - oldV;
-        else
-            diff = oldV - newV;
+        double diff = (newV > oldV) ? newV - oldV : oldV - newV;
         return diff > StaticData.SIGNIFICANCE_THRESHOLD ? true : false;
     }
 
-    // a function for retriving incoming edges
+    // A function for retriving incoming edges
     public static HashSet<Edge<string>> GetIncomingEdges(
         string vertex,
         AdjacencyGraph<string, Edge<string>> graph
@@ -56,12 +52,24 @@ public class PageRankProvider
 
         return incomingEdges;
     }
+    // A function for getting out-degree of given vertex
+    public int getOutDegree(string vertex, AdjacencyGraph<string, Edge<string>> graph)
+    {
+        int outDegree = 0;
+        foreach (Edge<string> edge in graph.Edges)
+        {
+            if (edge.Source == vertex)
+            {
+                outDegree++;
+            }
+        }
+        return outDegree;
+    }
 
     // write page rank calculator function
     public Dictionary<string, double> calculatePageRank(bool normalize)
     {
         // calculating token rank score
-        double d = DAMPING_FACTOR;
         // initially putting 1 to all
         foreach (string vertex in graph.Vertices)
         {
@@ -77,12 +85,16 @@ public class PageRankProvider
             {
                 HashSet<Edge<string>> incomings = GetIncomingEdges(vertex, graph);
                 // now calculate the PR score
-                double trank = (1 - d);
+                double trank = (1 - DAMPING_FACTOR);
                 double comingScore = 0;
                 foreach (Edge<string> edge in incomings)
                 {
                     string source1 = edge.Source;
-                    int outdegree = graph.OutDegree(vertex);
+                    // Console.WriteLine(
+                    //     "source1: " + string.Join(", ", source1) + string.Join("  , ", vertex)
+                    // );
+                    // int outdegree = graph.OutEdges(vertex).Count();
+                    int outdegree = getOutDegree(source1, graph);
                     // score and out degree should be affected by the edge weight
                     double score = oldScoreMap[source1];
                     if (outdegree == 1)
@@ -90,9 +102,8 @@ public class PageRankProvider
                     else if (outdegree > 1)
                         comingScore += (score / outdegree);
                 }
-                comingScore = comingScore * d;
+                comingScore = comingScore * DAMPING_FACTOR;
                 trank += comingScore;
-                bool significant = checkSignificantDiff(oldScoreMap[vertex], trank);
                 _ = checkSignificantDiff(oldScoreMap[vertex], trank)
                     ? newScoreMap[vertex] = trank
                     : inSignificant++;
@@ -139,8 +150,11 @@ public class PageRankProvider
             tokendb[key] = score;
         }
     }
-    protected void recordOriginalScores(){
-        foreach (string key in newScoreMap.Keys){
+
+    protected void recordOriginalScores()
+    {
+        foreach (string key in newScoreMap.Keys)
+        {
             double score = newScoreMap[key];
             tokendb[key] = score;
         }

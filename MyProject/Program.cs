@@ -6,7 +6,7 @@ namespace MyProject
 {
     class Program
     {
-        public void Main(string[] args)
+        public static void Main(string[] args)
         {
             var graph = new AdjacencyGraph<string, Edge<string>>();
             // add the vertex
