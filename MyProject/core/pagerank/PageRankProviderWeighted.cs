@@ -3,9 +3,10 @@ using ca.usask.cs.srlab.pagerank.config;
 using customedge;
 using QuickGraph;
 
-public class PageRankProvider
+public class PageRankProviderWeighted
 {
-    public AdjacencyGraph<string, Edge<string>> graph = new AdjacencyGraph<string, Edge<string>>();
+    public AdjacencyGraph<string, CustomEdge<string>> wgrpah =
+        new AdjacencyGraph<string, CustomEdge<string>>();
     Dictionary<string, double> tokendb = new Dictionary<string, double>();
     Dictionary<string, double> oldScoreMap = new Dictionary<string, double>();
     Dictionary<string, double> newScoreMap = new Dictionary<string, double>();
@@ -21,13 +22,12 @@ public class PageRankProvider
         this.newScoreMap = new Dictionary<string, double>();
     }
 
-    public PageRankProvider(
-        AdjacencyGraph<string, Edge<string>> graph,
+    public PageRankProviderWeighted(
+        AdjacencyGraph<string, CustomEdge<string>> wgraph,
         Dictionary<string, double> tokendb
     )
     {
-        // un-weighted graph constructor
-        this.graph = graph;
+        this.wgrpah = wgraph;
         InitilizeConstructor(tokendb);
     }
 
@@ -38,14 +38,15 @@ public class PageRankProvider
     }
 
     // A function for retriving incoming edges
-    public static HashSet<Edge<string>> getIncomingEdges(
+
+    public static HashSet<CustomEdge<string>> getIncomingWeightedEdges(
         string vertex,
-        AdjacencyGraph<string, Edge<string>> graph
+        AdjacencyGraph<string, CustomEdge<string>> graph
     )
     {
-        HashSet<Edge<string>> incomingEdges = new HashSet<Edge<string>>();
+        HashSet<CustomEdge<string>> incomingEdges = new HashSet<CustomEdge<string>>();
 
-        foreach (Edge<string> edge in graph.Edges)
+        foreach (CustomEdge<string> edge in graph.Edges)
         {
             if (edge.Target == vertex)
             {
@@ -57,10 +58,11 @@ public class PageRankProvider
     }
 
     // A function for getting out-degree of given vertex
-    public int getOutDegree(string vertex, AdjacencyGraph<string, Edge<string>> graph)
+
+    public int getOutWeightedDegree(string vertex, AdjacencyGraph<string, CustomEdge<string>> graph)
     {
         int outDegree = 0;
-        foreach (Edge<string> edge in graph.Edges)
+        foreach (CustomEdge<string> edge in graph.Edges)
         {
             if (edge.Source == vertex)
             {
@@ -70,12 +72,12 @@ public class PageRankProvider
         return outDegree;
     }
 
-    // Write page rank calculator function for un-weighted graph
-    public Dictionary<string, double> calculatePageRank(bool normalize)
+    // Write page rank calculator function for weighted graph
+    public Dictionary<string, double> calculatePageRankWeighted(bool normalize)
     {
         // calculating token rank score
         // initially putting 1 to all
-        foreach (string vertex in graph.Vertices)
+        foreach (string vertex in wgrpah.Vertices)
         {
             oldScoreMap[vertex] = INITIAL_VERTEX_SCORE;
             newScoreMap[vertex] = INITIAL_VERTEX_SCORE;
@@ -85,22 +87,23 @@ public class PageRankProvider
         while (!enoughIteration)
         {
             int inSignificant = 0;
-            foreach (string vertex in graph.Vertices)
+            foreach (string vertex in wgrpah.Vertices)
             {
-                HashSet<Edge<string>> incomings = getIncomingEdges(vertex, graph);
+                HashSet<CustomEdge<string>> incomings = getIncomingWeightedEdges(vertex, wgrpah);
                 // now calculate the PR score
                 double trank = (1 - DAMPING_FACTOR);
                 double comingScore = 0;
-                foreach (Edge<string> edge in incomings)
+                foreach (CustomEdge<string> edge in incomings)
                 {
                     string source1 = edge.Source;
                     // int outdegree = graph.OutEdges(vertex).Count();
-                    int outdegree = getOutDegree(source1, graph);
+                    int outdegree = getOutWeightedDegree(source1, wgrpah);
                     // score and out degree should be affected by the edge weight
-                    double score = oldScoreMap[source1];
-                    if (outdegree == 1)
+                    double edgeWeight = edge.GetWeight();
+                    double score = oldScoreMap[source1] * edgeWeight;
+                    if (outdegree == 0)
                         comingScore += score;
-                    else if (outdegree > 1)
+                    else
                         comingScore += (score / outdegree);
                 }
                 comingScore = comingScore * DAMPING_FACTOR;
@@ -115,7 +118,7 @@ public class PageRankProvider
                 oldScoreMap[key] = newScoreMap[key];
             }
             itercount++;
-            if (inSignificant == graph.VertexCount)
+            if (inSignificant == wgrpah.VertexCount)
             {
                 enoughIteration = true;
             }
