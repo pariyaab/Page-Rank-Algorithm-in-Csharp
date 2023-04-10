@@ -9,7 +9,6 @@ public class PageRankProvider
     Dictionary<string, double> tokendb = new Dictionary<string, double>();
     Dictionary<string, double> oldScoreMap = new Dictionary<string, double>();
     Dictionary<string, double> newScoreMap = new Dictionary<string, double>();
-    const double EDGE_WEIGHT_TH = StaticData.EDGE_WEIGHT_TH;
     const double INITIAL_VERTEX_SCORE = StaticData.INITIAL_VERTEX_SCORE;
     const double DAMPING_FACTOR = StaticData.DAMPING_FACTOR;
     const int MAX_ITERATION = StaticData.MAX_ITERATION;
@@ -132,6 +131,7 @@ public class PageRankProvider
         return tokendb;
     }
 
+    // normalize scores by dividing them on their max value
     protected void recordNormalizedScores()
     {
         // record normalized scores
